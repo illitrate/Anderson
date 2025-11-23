@@ -5,9 +5,9 @@
 When you create the Xcode project, organize the files into groups for better maintainability:
 
 ```
-MatrixMonitor/
+Anderson/
 ├── App/
-│   ├── MatrixMonitorApp.swift
+│   ├── AndersonApp.swift
 │   ├── Info.plist
 │   └── Assets.xcassets
 │
@@ -50,7 +50,7 @@ MatrixMonitor/
 
 ### 2. Configure Project Settings
 
-**Product Name:** MatrixMonitor
+**Product Name:** Anderson
 **Team:** (Select your team or leave as None for local development)
 **Organization Identifier:** com.yourname (or your preference)
 **Interface:** SwiftUI
@@ -80,11 +80,11 @@ For each file:
 
 **In Xcode 14+:**
 1. Select your project in the navigator
-2. Select the MatrixMonitor target
+2. Select the Anderson target
 3. Go to the **Info** tab
 4. Click the **+** button to add new keys:
    - **Application is agent (UIElement)**: YES
-   - **Privacy - AppleEvents Sending Usage Description**: "Matrix Monitor needs access to system information for monitoring widgets."
+   - **Privacy - AppleEvents Sending Usage Description**: "Anderson needs access to system information for monitoring widgets."
 
 **Or replace Info.plist:**
 - Locate Info.plist in your project
@@ -93,7 +93,7 @@ For each file:
 ### 5. Set Deployment Target
 
 1. Select project in navigator
-2. Select MatrixMonitor target
+2. Select Anderson target
 3. General tab
 4. Set **Minimum Deployment** to macOS 12.0 or later
 
@@ -114,7 +114,7 @@ For each file:
 
 ### First Build
 
-1. **Select target:** MatrixMonitor (My Mac)
+1. **Select target:** Anderson (My Mac)
 2. **Build:** ⌘B or Product → Build
 3. **Fix any build errors** (usually import or typing issues)
 4. **Run:** ⌘R or Product → Run
@@ -249,7 +249,7 @@ SwiftUI Previews work for individual components:
 
 1. After building in Release mode
 2. Go to Products folder:
-   - Right-click MatrixMonitor.app
+   - Right-click Anderson.app
    - Show in Finder
 3. Copy .app to Applications
 
@@ -280,7 +280,7 @@ Pods/
 ```bash
 git init
 git add .
-git commit -m "Initial Matrix Monitor implementation"
+git commit -m "Initial Anderson implementation"
 ```
 
 ## Next Steps

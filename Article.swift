@@ -1,6 +1,6 @@
 //
 //  Article.swift
-//  MatrixMonitor
+//  Anderson
 //
 //  Article data model with keyword matching
 //

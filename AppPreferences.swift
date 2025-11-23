@@ -1,6 +1,6 @@
 //
 //  AppPreferences.swift
-//  MatrixMonitor
+//  Anderson
 //
 //  Manages all user preferences and settings
 //

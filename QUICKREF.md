@@ -1,4 +1,4 @@
-# Matrix Monitor - Quick Reference
+# Anderson - Quick Reference
 
 ## Keyboard Shortcuts
 
@@ -272,4 +272,4 @@ Or use menu bar:
 For detailed setup instructions, see SETUP.md
 For full documentation, see README.md
 
-**Matrix Monitor** - Terminal aesthetics meet modern monitoring 🟢⚡︎
+**Anderson** - Terminal aesthetics meet modern monitoring 🟢⚡︎

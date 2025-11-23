@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  MatrixMonitor
+//  Anderson
 //
 //  Main view with three-panel layout
 //

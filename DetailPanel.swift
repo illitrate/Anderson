@@ -1,6 +1,6 @@
 //
 //  DetailPanel.swift
-//  MatrixMonitor
+//  Anderson
 //
 //  Panel for displaying matched articles in detail with slow scroll
 //

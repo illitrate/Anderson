@@ -1,6 +1,6 @@
 //
 //  MatrixTheme.swift
-//  MatrixMonitor
+//  Anderson
 //
 //  Defines the Matrix-inspired visual theme
 //

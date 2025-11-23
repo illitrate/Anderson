@@ -1,4 +1,4 @@
-# Matrix Monitor - File Index
+# Anderson - File Index
 
 ## 📂 Project Structure
 
@@ -14,7 +14,7 @@
 ### 💻 Swift Source Files (Add to Xcode)
 
 #### Core Application (3 files)
-- **MatrixMonitorApp.swift** - Main app, menu bar, window management (169 lines)
+- **AndersonApp.swift** - Main app, menu bar, window management (169 lines)
 - **ContentView.swift** - Three-panel layout (80 lines)
 - **MatrixTheme.swift** - Visual theme, colors, effects (103 lines)
 
@@ -46,7 +46,7 @@
 
 | File | Purpose | Lines | Required? |
 |------|---------|-------|-----------|
-| MatrixMonitorApp.swift | App entry point | 169 | ✅ Essential |
+| AndersonApp.swift | App entry point | 169 | ✅ Essential |
 | ContentView.swift | Main layout | 80 | ✅ Essential |
 | MatrixTheme.swift | Visual styling | 103 | ✅ Essential |
 | AppPreferences.swift | Settings | 186 | ✅ Essential |
@@ -64,7 +64,7 @@
 
 ### Minimum Viable Product (MVP)
 Add these first for a working app:
-1. MatrixMonitorApp.swift
+1. AndersonApp.swift
 2. MatrixTheme.swift
 3. AppPreferences.swift
 4. Article.swift
@@ -111,7 +111,7 @@ Add these first for a working app:
 → MatrixTheme.swift (glow, colors, fonts)
 
 **Window management?**
-→ MatrixMonitorApp.swift (AppDelegate class)
+→ AndersonApp.swift (AppDelegate class)
 
 **Settings interface?**
 → PreferencesView.swift (all tabs)
@@ -181,6 +181,6 @@ All files complete and tested. The project is ready for:
 
 ---
 
-Matrix Monitor - Complete Implementation
+Anderson - Complete Implementation
 Version 1.0 | November 22, 2024
 Ready for deployment 🟢⚡

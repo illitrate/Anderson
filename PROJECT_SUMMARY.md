@@ -1,14 +1,14 @@
-# Matrix Monitor - Project Summary
+# Anderson - Project Summary
 
 ## Project Overview
 
-**Matrix Monitor** is a macOS utility application that provides a Matrix-inspired interface for monitoring RSS feeds and system information. Designed for external displays (optimized for 1920x480), it features green-on-black terminal aesthetics with glowing text effects.
+**Anderson** is a macOS utility application that provides a Matrix-inspired interface for monitoring RSS feeds and system information. Designed for external displays (optimized for 1920x480), it features green-on-black terminal aesthetics with glowing text effects.
 
 ## Completed Components
 
 ### ✅ Core Application (100%)
 
-**MatrixMonitorApp.swift**
+**AndersonApp.swift**
 - Menu bar application (no dock icon)
 - Floating, borderless window
 - Always-on-top behavior
@@ -116,7 +116,7 @@
 ## File Inventory
 
 ### Swift Source Files (12 files)
-1. `MatrixMonitorApp.swift` - Main app entry point
+1. `AndersonApp.swift` - Main app entry point
 2. `ContentView.swift` - Main layout view
 3. `MatrixTheme.swift` - Visual styling and effects
 4. `AppPreferences.swift` - Settings management

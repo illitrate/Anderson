@@ -1,6 +1,6 @@
 //
 //  SearchPanel.swift
-//  MatrixMonitor
+//  Anderson
 //
 //  Fast scrolling panel showing RSS feed search results
 //

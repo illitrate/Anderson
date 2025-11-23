@@ -1,4 +1,4 @@
-# Getting Started with Matrix Monitor
+# Getting Started with Anderson
 
 ## 🎯 What You Have
 
@@ -14,7 +14,7 @@ A complete, ready-to-build macOS application with:
 1. Open Xcode
 2. File → New → Project
 3. Choose **macOS → App**
-4. Name it **MatrixMonitor**
+4. Name it **Anderson**
 5. Interface: **SwiftUI**, Language: **Swift**
 
 ### Step 2: Add Files
@@ -36,7 +36,7 @@ Press **⌘R** or Product → Run
 ## 📁 File Descriptions
 
 ### Core Files (Must Have)
-- `MatrixMonitorApp.swift` - App entry, menu bar, window management
+- `AndersonApp.swift` - App entry, menu bar, window management
 - `ContentView.swift` - Main three-panel layout
 - `MatrixTheme.swift` - All visual styling and effects
 
@@ -67,7 +67,7 @@ Press **⌘R** or Product → Run
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│ ⚡ Matrix Monitor                                      [Menu] │
+│ ⚡ Anderson                                      [Menu] │
 ├──────────┬────────────────────────┬──────────────────────────┤
 │  CLOCK   │  SEARCHING FEEDS...    │  MATCHED ARTICLES       │
 │  [12:34] │  ▼ Fast scrolling      │  • Keyword: [AI]        │

@@ -1,6 +1,6 @@
 //
 //  SystemWidgets.swift
-//  MatrixMonitor
+//  Anderson
 //
 //  System monitoring widgets
 //

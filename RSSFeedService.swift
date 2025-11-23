@@ -1,6 +1,6 @@
 //
 //  RSSFeedService.swift
-//  MatrixMonitor
+//  Anderson
 //
 //  Service for fetching and parsing RSS feeds
 //

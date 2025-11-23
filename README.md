@@ -1,10 +1,10 @@
-# Matrix Monitor
+# Anderson
 
 A Matrix-inspired macOS utility for monitoring RSS feeds and system information with a distinctive green-on-black terminal aesthetic.
 
 ## Overview
 
-Matrix Monitor is a floating, borderless window application designed for external monitors (optimized for 1920x480 resolution). It displays:
+Anderson is a floating, borderless window application designed for external monitors (optimized for 1920x480 resolution). It displays:
 
 - **Fast-scrolling RSS feed articles** with keyword matching
 - **Detailed view of matched articles** with slow, readable scrolling
@@ -48,7 +48,7 @@ Matrix Monitor is a floating, borderless window application designed for externa
 2. File → New → Project
 3. Select "App" under macOS
 4. Configure:
-   - Product Name: `MatrixMonitor`
+   - Product Name: `Anderson`
    - Interface: SwiftUI
    - Language: Swift
    - Organization Identifier: (your choice)
@@ -57,7 +57,7 @@ Matrix Monitor is a floating, borderless window application designed for externa
 
 Copy all the provided Swift files into your Xcode project:
 
-- `MatrixMonitorApp.swift` - Main app entry point
+- `AndersonApp.swift` - Main app entry point
 - `ContentView.swift` - Main layout
 - `MatrixTheme.swift` - Visual styling and colors
 - `AppPreferences.swift` - Settings management
@@ -78,7 +78,7 @@ Add these keys to your Info.plist:
 <key>LSUIElement</key>
 <true/>
 <key>NSAppleEventsUsageDescription</key>
-<string>Matrix Monitor needs access to system information for monitoring widgets.</string>
+<string>Anderson needs access to system information for monitoring widgets.</string>
 ```
 
 The `LSUIElement` key ensures the app runs without a dock icon.

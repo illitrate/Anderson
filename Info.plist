@@ -23,7 +23,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Matrix Monitor needs access to system information for monitoring widgets.</string>
+	<string>Anderson needs access to system information for monitoring widgets.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2024. All rights reserved.</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>

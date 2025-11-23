@@ -1,6 +1,6 @@
 //
 //  PreferencesView.swift
-//  MatrixMonitor
+//  Anderson
 //
 //  Preferences window with tabbed interface
 //

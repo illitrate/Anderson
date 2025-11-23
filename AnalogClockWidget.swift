@@ -1,6 +1,6 @@
 //
 //  AnalogClockWidget.swift
-//  MatrixMonitor
+//  Anderson
 //
 //  Traditional analog clock with Matrix styling
 //

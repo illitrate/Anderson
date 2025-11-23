@@ -1,6 +1,6 @@
 //
 //  WidgetPanel.swift
-//  MatrixMonitor
+//  Anderson
 //
 //  Scrolling panel of system monitoring widgets
 //

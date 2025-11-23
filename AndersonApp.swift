@@ -1,6 +1,6 @@
 //
-//  MatrixMonitorApp.swift
-//  MatrixMonitor
+//  AndersonApp.swift
+//  Anderson
 //
 //  A Matrix-inspired RSS feed monitor with system widgets
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct MatrixMonitorApp: App {
+struct AndersonApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var preferences = AppPreferences.shared
     
@@ -43,7 +43,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
         if let button = statusItem?.button {
-            button.image = NSImage(systemSymbolName: "matrix.fill", accessibilityDescription: "Matrix Monitor")
+            button.image = NSImage(systemSymbolName: "matrix.fill", accessibilityDescription: "Anderson")
             // Fallback if matrix.fill doesn't exist
             if button.image == nil {
                 button.title = "⚡︎"
@@ -121,7 +121,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 defer: false
             )
             
-            preferencesWindow?.title = "Matrix Monitor Preferences"
+            preferencesWindow?.title = "Anderson Preferences"
             preferencesWindow?.contentView = NSHostingView(rootView: prefsView)
             preferencesWindow?.center()
         }
