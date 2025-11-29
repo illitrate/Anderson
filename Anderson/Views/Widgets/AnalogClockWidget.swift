@@ -13,7 +13,7 @@ struct AnalogClockWidget: View {
     
     var body: some View {
         VStack(spacing: 4) {
-            GlowingText("CLOCK", size: 12, bold: true)
+//            GlowingText("CLOCK", size: 12, bold: true)
             
             ZStack {
                 // Clock face background

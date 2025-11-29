@@ -24,8 +24,8 @@ struct WidgetPanel: View {
                     VStack(spacing: 0) {
                         ForEach(pinnedWidgetViews, id: \.id) { widget in
                             widget.view
-                                .frame(maxWidth: 280)
-                                .frame(height: 120)
+                                .frame(maxWidth: 150)
+                                .frame(height: 100)
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .padding(.vertical, 8)
                                 .padding(.horizontal, 8)
@@ -35,15 +35,15 @@ struct WidgetPanel: View {
                         }
                     }
                 }
-                
-                // Rotating widgets area - continuous scroll
-                if !rotatingWidgets.isEmpty {
-                    ZStack(alignment: .top) {
+              
+                   // Rotating widgets area - continuous scroll
+                ZStack(alignment: .top) {
+                    if !rotatingWidgets.isEmpty {
                         // Create a repeating sequence of widgets for infinite scroll effect
                         VStack(spacing: widgetSpacing) {
                             ForEach(infiniteWidgetSequence, id: \.index) { item in
                                 item.widget.view
-                                    .frame(maxWidth: 280)
+                                    .frame(maxWidth: 150)
                                     .frame(height: widgetHeight)
                                     .frame(maxWidth: .infinity, alignment: .center)
                                     .padding(.horizontal, 8)
@@ -51,12 +51,12 @@ struct WidgetPanel: View {
                         }
                         .offset(y: scrollOffset)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .clipped()
-                } else {
-                    Spacer()
                 }
-                
+                .frame(maxWidth: .infinity, maxHeight: CGFloat(infiniteWidgetSequence.count*30))
+                .clipped()
+
+                Spacer()
+
                 // Control buttons at bottom
                 VStack(spacing: 8) {
                     Divider()
@@ -182,7 +182,7 @@ struct WidgetPanel: View {
 #Preview {
     WidgetPanel()
         .environmentObject(AppPreferences.shared)
-        .frame(width: 200, height: 480)
+        .frame(width: 200, height: 680)
         .background(MatrixTheme.backgroundColor)
 }
 

@@ -99,21 +99,6 @@ struct RSSFeedsPreferencesView: View {
     
     @State private var keywordEditingFeed: RSSFeedConfig? = nil
     
-    enum SheetKind: Identifiable {
-        case add
-        case edit
-        case keywords
-        
-        var id: String {
-            switch self {
-            case .add: return "add"
-            case .edit: return "edit"
-            case .keywords: return "keywords"
-            }
-        }
-    }
-    @State private var activeSheet: SheetKind? = nil
-    
     private func normalizedHTTPURL(from raw: String) -> URL? {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
@@ -132,10 +117,12 @@ struct RSSFeedsPreferencesView: View {
                 Spacer()
                 
                 Button(action: {
-                    DispatchQueue.main.async { activeSheet = .add }
+                    print("Add Feed button clicked")
+                    presentAddFeedWindow()
                 }) {
                     Label("Add Feed", systemImage: "plus")
                 }
+                .buttonStyle(.bordered)
             }
             .padding()
             
@@ -162,7 +149,7 @@ struct RSSFeedsPreferencesView: View {
                                 editFeedName = feed.name
                                 editFeedURL = feed.url
                                 editFeedKeywordMode = feed.keywordMode
-                                DispatchQueue.main.async { activeSheet = .edit }
+                                presentEditFeedWindow()
                             }) {
                                 Image(systemName: "pencil")
                             }
@@ -195,7 +182,7 @@ struct RSSFeedsPreferencesView: View {
                             
                             Button(action: {
                                 keywordEditingFeed = feed
-                                DispatchQueue.main.async { activeSheet = .keywords }
+                                presentKeywordsWindow()
                             }) {
                                 Text("Keywords…")
                                     .font(.caption)
@@ -212,7 +199,7 @@ struct RSSFeedsPreferencesView: View {
                         editFeedName = feed.name
                         editFeedURL = feed.url
                         editFeedKeywordMode = feed.keywordMode
-                        DispatchQueue.main.async { activeSheet = .edit }
+                        presentEditFeedWindow()
                     }
                 }
             }
@@ -223,77 +210,120 @@ struct RSSFeedsPreferencesView: View {
             }
             .padding()
         }
-        .sheet(item: $activeSheet) { kind in
-            switch kind {
-            case .add:
-                AddFeedSheet(
-                    feedURL: $newFeedURL,
-                    feedName: $newFeedName,
-                    onAdd: {
-                        if preferences.isPreferencesClosing { return }
-                        if let url = normalizedHTTPURL(from: newFeedURL),
-                           let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme) {
-                            let feed = RSSFeedConfig(url: url.absoluteString, name: newFeedName)
-                            preferences.rssFeeds.append(feed)
-                            newFeedURL = ""
-                            newFeedName = ""
-                            activeSheet = nil
-                        } else {
-                            print("Invalid feed URL entered: \(newFeedURL)")
-                        }
-                    },
-                    onCancel: {
-                        activeSheet = nil
-                    }
-                )
-            case .edit:
-                EditFeedSheet(
-                    feedURL: $editFeedURL,
-                    feedName: $editFeedName,
-                    keywordMode: $editFeedKeywordMode,
-                    onSave: {
-                        if preferences.isPreferencesClosing { return }
-                        guard var current = editingFeed else { return }
-                        let trimmed = editFeedURL.trimmingCharacters(in: .whitespacesAndNewlines)
-                        var finalURLString: String? = nil
-                        if !trimmed.isEmpty {
-                            if trimmed.lowercased().hasPrefix("http://") || trimmed.lowercased().hasPrefix("https://") {
-                                finalURLString = URL(string: trimmed)?.absoluteString
-                            } else {
-                                finalURLString = URL(string: "https://" + trimmed)?.absoluteString
-                            }
-                        }
-                        if let urlString = finalURLString, let url = URL(string: urlString), let scheme = url.scheme?.lowercased(), ["http","https"].contains(scheme) {
-                            current.name = editFeedName
-                            current.url = url.absoluteString
-                            current.keywordMode = editFeedKeywordMode
-                            if let idx = preferences.rssFeeds.firstIndex(where: { $0.id == current.id }) {
-                                preferences.rssFeeds[idx] = current
-                            }
-                            activeSheet = nil
-                        } else {
-                            print("Invalid feed URL entered: \(editFeedURL)")
-                        }
-                    },
-                    onCancel: {
-                        activeSheet = nil
-                    }
-                )
-            case .keywords:
-                if let feed = keywordEditingFeed,
-                   let index = preferences.rssFeeds.firstIndex(where: { $0.id == feed.id }) {
-                    FeedKeywordsSheet(
-                        feed: $preferences.rssFeeds[index],
-                        onDone: {
-                            activeSheet = nil
-                        }
-                    )
+    }
+
+    // MARK: - Window Presentation Functions
+
+    private func presentAddFeedWindow() {
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 220),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Add RSS Feed"
+        window.center()
+        window.level = .popUpMenu  // Appear above floating windows
+        window.isReleasedWhenClosed = false
+
+        let hostingView = NSHostingView(rootView: AddFeedSheet(
+            feedURL: $newFeedURL,
+            feedName: $newFeedName,
+            onAdd: {
+                if preferences.isPreferencesClosing { return }
+                if let url = normalizedHTTPURL(from: newFeedURL),
+                   let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme) {
+                    let feed = RSSFeedConfig(url: url.absoluteString, name: newFeedName)
+                    preferences.rssFeeds.append(feed)
+                    newFeedURL = ""
+                    newFeedName = ""
+                    window.close()
+                } else {
+                    print("Invalid feed URL entered: \(newFeedURL)")
                 }
+            },
+            onCancel: {
+                window.close()
             }
-        }
-        .onDisappear {
-            activeSheet = nil
-        }
+        ))
+
+        window.contentView = hostingView
+        window.makeKeyAndOrderFront(nil)
+    }
+
+    private func presentEditFeedWindow() {
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 280),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Edit RSS Feed"
+        window.center()
+        window.level = .popUpMenu  // Appear above floating windows
+        window.isReleasedWhenClosed = false
+
+        let hostingView = NSHostingView(rootView: EditFeedSheet(
+            feedURL: $editFeedURL,
+            feedName: $editFeedName,
+            keywordMode: $editFeedKeywordMode,
+            onSave: {
+                if preferences.isPreferencesClosing { return }
+                guard var current = editingFeed else { return }
+                let trimmed = editFeedURL.trimmingCharacters(in: .whitespacesAndNewlines)
+                var finalURLString: String? = nil
+                if !trimmed.isEmpty {
+                    if trimmed.lowercased().hasPrefix("http://") || trimmed.lowercased().hasPrefix("https://") {
+                        finalURLString = URL(string: trimmed)?.absoluteString
+                    } else {
+                        finalURLString = URL(string: "https://" + trimmed)?.absoluteString
+                    }
+                }
+                if let urlString = finalURLString, let url = URL(string: urlString), let scheme = url.scheme?.lowercased(), ["http","https"].contains(scheme) {
+                    current.name = editFeedName
+                    current.url = url.absoluteString
+                    current.keywordMode = editFeedKeywordMode
+                    if let idx = preferences.rssFeeds.firstIndex(where: { $0.id == current.id }) {
+                        preferences.rssFeeds[idx] = current
+                    }
+                    window.close()
+                } else {
+                    print("Invalid feed URL entered: \(editFeedURL)")
+                }
+            },
+            onCancel: {
+                window.close()
+            }
+        ))
+
+        window.contentView = hostingView
+        window.makeKeyAndOrderFront(nil)
+    }
+
+    private func presentKeywordsWindow() {
+        guard let feed = keywordEditingFeed,
+              let index = preferences.rssFeeds.firstIndex(where: { $0.id == feed.id }) else { return }
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 450),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Keywords for \(feed.name)"
+        window.center()
+        window.level = .popUpMenu  // Appear above floating windows
+        window.isReleasedWhenClosed = false
+
+        let hostingView = NSHostingView(rootView: FeedKeywordsSheet(
+            feed: $preferences.rssFeeds[index],
+            onDone: {
+                window.close()
+            }
+        ))
+
+        window.contentView = hostingView
+        window.makeKeyAndOrderFront(nil)
     }
     
     private func keywordModeIcon(for mode: KeywordMode) -> String {
