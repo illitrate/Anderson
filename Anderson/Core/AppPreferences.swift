@@ -8,6 +8,7 @@
 import SwiftUI
 import Combine
 
+
 class AppPreferences: ObservableObject {
     static let shared = AppPreferences()
     
