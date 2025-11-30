@@ -52,17 +52,17 @@ struct WidgetPanel: View {
                         .offset(y: scrollOffset)
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: CGFloat(infiniteWidgetSequence.count*30))
+                .frame(maxWidth: .infinity, maxHeight: rotatingWidgetsHeight(totalHeight: geometry.size.height))
                 .clipped()
 
-                Spacer()
+                Spacer(minLength: 0)
 
                 // Control buttons at bottom
                 VStack(spacing: 8) {
                     Divider()
                         .background(MatrixTheme.darkGreen.opacity(0.3))
                     
-                    HStack(spacing: 8) {
+                    HStack(spacing: 0) {
                         Button(action: {
                             openSettings()
                         }) {
@@ -85,8 +85,10 @@ struct WidgetPanel: View {
                         .buttonStyle(.plain)
                         .help("Quit Anderson (⌘Q)")
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    
+                    Spacer()
                 }
             }
         }
@@ -102,6 +104,25 @@ struct WidgetPanel: View {
         .onChange(of: preferences.widgetRotationDuration) { _, _ in
             restartScroll()
         }
+    }
+    
+    // Calculate the height available for rotating widgets
+
+    private func rotatingWidgetsHeight(totalHeight: CGFloat) -> CGFloat {
+
+        // Calculate pinned widgets height
+        let pinnedWidgetHeight: CGFloat = 100 // widget height
+        let pinnedWidgetPadding: CGFloat = 16 // vertical padding (8 top + 8 bottom)
+        let pinnedDividerHeight: CGFloat = 1 // divider
+        let pinnedTotalHeight = CGFloat(pinnedWidgetViews.count) * (pinnedWidgetHeight + pinnedWidgetPadding + pinnedDividerHeight)
+
+        // Calculate bottom section height (buttons + padding + divider)
+        let bottomSectionHeight: CGFloat = 50 // Approximate height for buttons section
+        
+        // Available height = total - pinned widgets - bottom section
+        let availableHeight = totalHeight - pinnedTotalHeight - bottomSectionHeight
+        
+        return max(availableHeight, 0)
     }
     
     // Create an infinite sequence by repeating widgets
