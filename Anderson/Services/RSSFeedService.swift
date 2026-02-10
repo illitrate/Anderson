@@ -15,6 +15,7 @@ class RSSFeedService: NSObject, ObservableObject, XMLParserDelegate {
     private var preferences: AppPreferences { AppPreferences.shared }
     private var refreshTimer: Timer?
     private var cancellables = Set<AnyCancellable>()
+    private let articleQueue = DispatchQueue(label: "com.anderson.articleQueue", qos: .userInitiated)
     
     // XML parsing state
     private var currentElement = ""
@@ -102,19 +103,19 @@ class RSSFeedService: NSObject, ObservableObject, XMLParserDelegate {
         parser.parse()
         
         print("📰 Parsed \(parsedArticles.count) articles from \(feedConfig.name)")
-        
-        // Process parsed articles
-        DispatchQueue.main.async { [weak self] in
+
+        // Process parsed articles on background queue for thread safety
+        articleQueue.async { [weak self] in
             guard let self = self else { return }
-            
+
             // Get the appropriate keywords for this feed
             let (positiveKeywords, negativeKeywords) = self.getKeywordsForFeed(feedConfig)
-            
+
             print("🔑 Using keywords for \(feedConfig.name):")
             print("   Mode: \(feedConfig.keywordMode.rawValue)")
             print("   Positive: \(positiveKeywords)")
             print("   Negative: \(negativeKeywords)")
-            
+
             // Match keywords and filter by negative keywords
             let matchedParsedArticles = self.parsedArticles.compactMap { article -> Article? in
                 let matchedArticle = KeywordMatcher.matchKeywords(
@@ -122,28 +123,47 @@ class RSSFeedService: NSObject, ObservableObject, XMLParserDelegate {
                     keywords: positiveKeywords,
                     negativeKeywords: negativeKeywords
                 )
-                
+
                 // Return nil if article matches any negative keyword (filter it out)
                 return matchedArticle.matchesNegativeKeyword ? nil : matchedArticle
             }
-            
+
             print("🔍 Keyword matching: \(matchedParsedArticles.count) articles passed filters from \(feedConfig.name)")
-            
+
+            // Prepare all updates in background
+            var updatedAll = self.allArticles
+            var updatedMatched = self.matchedArticles
+
             // Add to all articles (avoid duplicates by URL)
             for article in matchedParsedArticles {
-                if !self.allArticles.contains(where: { $0.url == article.url }) {
-                    self.allArticles.append(article)
+                if !updatedAll.contains(where: { $0.url == article.url }) {
+                    updatedAll.append(article)
                 }
-                
-                // Add matched articles
-                if !article.matchedKeywords.isEmpty {
-                    self.addMatchedArticle(article)
+
+                // Add matched articles (avoid duplicates)
+                if !article.matchedKeywords.isEmpty && !updatedMatched.contains(where: { $0.id == article.id }) {
+                    updatedMatched.append(article)
+                    print("✅ Added matched article: '\(article.title)' (Keywords: \(article.matchedKeywords.joined(separator: ", ")))")
                 }
             }
-            
-            // Keep only recent articles (last 100)
-            if self.allArticles.count > 100 {
-                self.allArticles = Array(self.allArticles.suffix(100))
+
+            // Sort matched by priority
+            updatedMatched.sort { $0.priority > $1.priority }
+
+            // Keep only recent articles (last 100 for all, 50 for matched)
+            if updatedAll.count > 100 {
+                updatedAll = Array(updatedAll.suffix(100))
+            }
+            if updatedMatched.count > 50 {
+                updatedMatched = Array(updatedMatched.prefix(50))
+            }
+
+            print("📊 Total matched articles after update: \(updatedMatched.count)")
+
+            // Single atomic update on main thread
+            DispatchQueue.main.async {
+                self.allArticles = updatedAll
+                self.matchedArticles = updatedMatched
             }
         }
     }
@@ -197,27 +217,35 @@ class RSSFeedService: NSObject, ObservableObject, XMLParserDelegate {
     }
     
     private func reprocessArticles() {
-        DispatchQueue.main.async { [weak self] in
+        // Use articleQueue for synchronization with feed processing
+        articleQueue.async { [weak self] in
             guard let self = self else { return }
-            
+
             // Reprocess all articles with appropriate keywords based on their source
-            self.allArticles = self.allArticles.compactMap { article -> Article? in
+            let reprocessedAll = self.allArticles.compactMap { article -> Article? in
                 let (positiveKeywords, negativeKeywords) = self.getKeywordsForSource(article.source)
-                
+
                 let matchedArticle = KeywordMatcher.matchKeywords(
                     in: article,
                     keywords: positiveKeywords,
                     negativeKeywords: negativeKeywords
                 )
-                
+
                 // Return nil if article matches any negative keyword (filter it out)
                 return matchedArticle.matchesNegativeKeyword ? nil : matchedArticle
             }
-            
-            // Rebuild matched articles
-            self.matchedArticles = self.allArticles
+
+            // Rebuild matched articles WITH 50-ITEM CAP
+            let reprocessedMatched = Array(reprocessedAll
                 .filter { !$0.matchedKeywords.isEmpty }
                 .sorted { $0.priority > $1.priority }
+                .prefix(50))
+
+            // Single atomic update on main thread
+            DispatchQueue.main.async {
+                self.allArticles = reprocessedAll
+                self.matchedArticles = reprocessedMatched
+            }
         }
     }
     

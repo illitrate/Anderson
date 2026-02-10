@@ -77,6 +77,12 @@ class AppPreferences: ObservableObject {
         didSet { saveEnabledWidgets() }
     }
     
+    // Display Settings
+
+    @Published var selectedDisplayID: String? {
+        didSet { UserDefaults.standard.set(selectedDisplayID, forKey: "selectedDisplayID") }
+    }
+    
     // Lifecycle flag to prevent mutations during Preferences teardown
     @Published var isPreferencesClosing: Bool = false
     
@@ -105,6 +111,9 @@ class AppPreferences: ObservableObject {
         self.pinnedWidgets = Self.loadPinnedWidgets()
         self.diskSpaceChangeThreshold = UserDefaults.standard.object(forKey: "diskSpaceChangeThreshold") as? Double ?? 5.0 // 5GB
         self.enabledWidgets = Self.loadEnabledWidgets()
+        
+        // Load Display Settings
+        self.selectedDisplayID = UserDefaults.standard.string(forKey: "selectedDisplayID")
         
         // Set default enabled widgets if empty
         if self.enabledWidgets.isEmpty {

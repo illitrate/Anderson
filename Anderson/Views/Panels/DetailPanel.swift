@@ -15,6 +15,7 @@ struct DetailPanel: View {
     @State private var scrollTimer: Timer?
     @State private var displayArticles: [Article] = [] // Articles in current display order
     @State private var articleRotationCount = 0 // Track how many times we've rotated
+    @State private var pendingRestart: DispatchWorkItem? // Tracks pending timer restart
     
     // Fixed heights for predictable scrolling
     private let headerHeight: CGFloat = 60
@@ -79,8 +80,12 @@ struct DetailPanel: View {
         }
         .onChange(of: feedService.matchedArticles.count) { _, newCount in
             print("DetailPanel: Matched articles count changed to \(newCount)")
-            displayArticles = feedService.matchedArticles
-            resetDisplay()
+
+            // Ensure update happens on main thread
+            DispatchQueue.main.async {
+                self.displayArticles = self.feedService.matchedArticles
+                self.resetDisplay()
+            }
         }
     }
     
@@ -88,7 +93,9 @@ struct DetailPanel: View {
     private func articleView(for article: Article, displayIndex: Int, geometry: GeometryProxy) -> some View {
         // Only first two articles are expanded
         let isExpanded = displayIndex < 2
-        let originalIndex = feedService.matchedArticles.firstIndex(where: { $0.id == article.id }) ?? 0
+
+        // Safe index lookup with bounds checking
+        let originalIndex = feedService.matchedArticles.firstIndex(where: { $0.id == article.id }) ?? displayIndex
         let articleNumber = originalIndex + 1
         
         VStack(alignment: .leading, spacing: 0) {
@@ -241,46 +248,79 @@ struct DetailPanel: View {
     
     private func startContinuousScroll() {
         guard !displayArticles.isEmpty else { return }
-        
+
         stopScroll()
-        
+        scheduleNextScrollTick()
+    }
+
+    private func scheduleNextScrollTick() {
         let scrollInterval = 1.0 / 60.0 // 60 fps
-        
-        scrollTimer = Timer.scheduledTimer(withTimeInterval: scrollInterval, repeats: true) { [self] _ in
+
+        // Use one-shot timer (repeats: false) to prevent callback pile-up
+        scrollTimer = Timer.scheduledTimer(withTimeInterval: scrollInterval, repeats: false) { [self] _ in
+            // Clear timer reference immediately
+            scrollTimer = nil
+
+            guard !displayArticles.isEmpty else {
+                return
+            }
+
             let pixelsPerFrame = preferences.detailPanelScrollSpeed
             scrollOffset -= pixelsPerFrame
-            
+
             // The first article is always expanded, so check when its FULL height
             // (header + content) has scrolled off the top of the screen
             let firstArticleFullHeight = expandedHeight
             let firstArticleBottom = scrollOffset + firstArticleFullHeight
-            
+
             // Remove the first article when its bottom edge scrolls past the top of the screen
             if firstArticleBottom <= 0 && !displayArticles.isEmpty {
                 print("🔄 Article removed (scrolled off after \(firstArticleFullHeight)px)")
-                
-                // Remove the first article completely (don't recycle)
+
+                // Perform removal
                 displayArticles.removeFirst()
                 articleRotationCount += 1
-                
+
                 // Adjust scroll offset so the second article (now first) starts at the top
-                // Account for the spacing that was between articles
                 scrollOffset += firstArticleFullHeight + articleSpacing
-                
+
                 // If we've run out of articles, stop scrolling
                 if displayArticles.isEmpty {
-                    stopScroll()
+                    return
                 }
+
+                // Cancel any pending restart to avoid duplicates
+                pendingRestart?.cancel()
+
+                // Schedule restart after giving SwiftUI time to process state changes
+                let restartWork = DispatchWorkItem { [self] in
+                    guard !displayArticles.isEmpty else { return }
+                    scheduleNextScrollTick()
+                    pendingRestart = nil
+                }
+                pendingRestart = restartWork
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.016, execute: restartWork)
+            } else {
+                // Continue scrolling - schedule next tick
+                scheduleNextScrollTick()
             }
         }
     }
     
     private func stopScroll() {
+        // Cancel any pending restart
+        pendingRestart?.cancel()
+        pendingRestart = nil
+
+        // Invalidate timer
         scrollTimer?.invalidate()
         scrollTimer = nil
     }
     
     private func resetDisplay() {
+        // CRITICAL: Stop any existing timers/pending restarts first
+        stopScroll()
+
         scrollOffset = 0
         displayArticles = feedService.matchedArticles
         articleRotationCount = 0

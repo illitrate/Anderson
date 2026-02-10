@@ -57,6 +57,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Create floating window
         createFloatingWindow()
+        
+        // Listen for display change notifications
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("MoveToDisplay"),
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            if let displayID = notification.userInfo?["displayID"] as? String {
+                self?.moveWindowToDisplay(displayID)
+            }
+        }
     }
     
     func createFloatingWindow() {
@@ -113,13 +124,39 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func getSavedScreen() -> NSScreen? {
+        // First try to get screen from preferences
+        if let savedID = AppPreferences.shared.selectedDisplayID {
+            if let screen = NSScreen.screens.first(where: { $0.localizedName == savedID }) {
+                return screen
+            }
+        }
+        // Fallback to old method for backwards compatibility
         let savedScreenName = UserDefaults.standard.string(forKey: "LastScreenName")
         return NSScreen.screens.first { $0.localizedName == savedScreenName }
     }
-    
+
     func saveWindowScreen() {
         guard let window = floatingWindow,
               let screen = window.screen else { return }
         UserDefaults.standard.set(screen.localizedName, forKey: "LastScreenName")
+        AppPreferences.shared.selectedDisplayID = screen.localizedName
+    }
+
+    func moveWindowToDisplay(_ displayID: String) {
+        guard let window = floatingWindow,
+              let targetScreen = NSScreen.screens.first(where: { $0.localizedName == displayID }) else {
+            return
+        }
+
+        let screenFrame = targetScreen.frame
+         // Animate the window moving and resizing
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.3
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            window.animator().setFrame(screenFrame, display: true)
+        } completionHandler: {
+            // Save the new screen
+            self.saveWindowScreen()
+        }
     }
 }

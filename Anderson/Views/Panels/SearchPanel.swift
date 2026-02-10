@@ -44,10 +44,10 @@ struct SearchPanel: View {
             // Pause scrolling when keyword is found
             pausedArticleId = article.id
             scrollTimer?.invalidate()
-            
-            // Add to matched articles
-            feedService.addMatchedArticle(article)
-            
+
+            // Note: Articles are already added to matchedArticles by RSSFeedService
+            // No need to add them again here (prevents race conditions)
+
             // Resume scrolling after pause duration
             DispatchQueue.main.asyncAfter(deadline: .now() + preferences.keywordPauseDuration) {
                 pausedArticleId = nil

@@ -61,20 +61,73 @@ struct PreferencesView: View {
 
 struct GeneralPreferencesView: View {
     @EnvironmentObject var preferences: AppPreferences
-    
+    @State private var availableDisplays: [DisplayInfo] = []
+    @State private var selectedDisplay: DisplayInfo?
+
     var body: some View {
         Form {
+            Section(header: Text("Display").font(.headline)) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Select Display")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    if availableDisplays.isEmpty {
+                        Text("No displays detected")
+                            .foregroundColor(.secondary)
+                    } else {
+                        ForEach(availableDisplays) { display in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    HStack {
+                                        Image(systemName: display.isMain ? "display.2" : "display")
+                                            .foregroundColor(display.isMain ? .blue : .secondary)
+                                        Text(display.name)
+                                            .font(.body)
+                                        if display.isMain {
+                                            Text("(Primary)")
+                                                .font(.caption)
+                                                .foregroundColor(.blue)
+                                        }
+                                    }
+                                    Text("\(Int(display.width)) × \(Int(display.height))")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                
+                                if selectedDisplay?.id == display.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                }
+                            }
+                            .padding(8)
+                            .background(selectedDisplay?.id == display.id ? Color.green.opacity(0.1) : Color.clear)
+                            .cornerRadius(6)
+                            .onTapGesture {
+                                selectDisplay(display)
+                            }
+                        }
+                    }
+
+                    Button(action: refreshDisplays) {
+                        Label("Refresh Displays", systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+
             Section(header: Text("Appearance").font(.headline)) {
                 VStack(alignment: .leading) {
                     Text("Background Transparency: \(Int(preferences.backgroundTransparency * 100))%")
                     Slider(value: $preferences.backgroundTransparency, in: 0...1)
                 }
-                
+
                 VStack(alignment: .leading) {
                     Text("Glow Intensity: \(String(format: "%.1f", preferences.glowIntensity))")
                     Slider(value: $preferences.glowIntensity, in: 0...2)
                 }
-                
+
                 VStack(alignment: .leading) {
                     Text("Font Size: \(Int(preferences.fontSize))pt")
                     Slider(value: $preferences.fontSize, in: 10...20)
@@ -82,7 +135,54 @@ struct GeneralPreferencesView: View {
             }
         }
         .padding()
+        .onAppear {
+            refreshDisplays()
+        }
     }
+ 
+    private func refreshDisplays() {
+        availableDisplays = getAvailableDisplays()
+        // Set initial selection from preferences or default to main screen
+        if let savedID = preferences.selectedDisplayID,
+           let saved = availableDisplays.first(where: { $0.id == savedID }) {
+            selectedDisplay = saved
+        } else if let main = availableDisplays.first(where: { $0.isMain }) {
+            selectedDisplay = main
+            preferences.selectedDisplayID = main.id
+        }
+    }
+
+    private func selectDisplay(_ display: DisplayInfo) {
+        selectedDisplay = display
+        preferences.selectedDisplayID = display.id
+
+        // Notify the app to move the window
+        NotificationCenter.default.post(
+            name: NSNotification.Name("MoveToDisplay"),
+            object: nil,
+            userInfo: ["displayID": display.id]
+        )
+    }
+
+    private func getAvailableDisplays() -> [DisplayInfo] {
+        return NSScreen.screens.enumerated().map { index, screen in
+            DisplayInfo(
+                id: screen.localizedName,
+                name: screen.localizedName,
+                width: screen.frame.width,
+                height: screen.frame.height,
+                isMain: screen == NSScreen.main
+            )
+        }
+    }
+}
+
+struct DisplayInfo: Identifiable, Equatable {
+    let id: String
+    let name: String
+    let width: CGFloat
+    let height: CGFloat
+    let isMain: Bool
 }
 
 // MARK: - RSS Feeds Preferences
